@@ -1,6 +1,6 @@
 # Npgsql Sm3 Auth builder
 
-[![.NET](https://github.com/zlzforever/NpgsqlSm3AuthBuilder/actions/workflows/dotnet.yml/badge.svg)](https://github.com/zlzforever/NpgsqlSm3AuthBuilder/actions/workflows/dotnet.yml)
+[![.NET](https://github.com/zlzforever/NpgsqlSm3AuthBuilder/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/zlzforever/NpgsqlSm3AuthBuilder/actions/workflows/dotnet.yml)
 
 Build Npgsql dotent driver support SM3 auth
 
