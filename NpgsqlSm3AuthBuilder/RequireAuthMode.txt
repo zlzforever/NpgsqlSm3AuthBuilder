@@ -1,0 +1,31 @@
+enum RequireAuthMode
+{
+    /// <summary>
+    /// Plaintext password.
+    /// </summary>
+    Password = 1,
+    /// <summary>
+    /// MD5 hashed password.
+    /// </summary>
+    MD5 = 2,
+    /// <summary>
+    /// Kerberos.
+    /// </summary>
+    GSS = 4,
+    /// <summary>
+    /// Windows SSPI.
+    /// </summary>
+    SSPI = 8,
+    /// <summary>
+    /// SASL.
+    /// </summary>
+    ScramSHA256 = 16,
+    /// <summary>
+    /// No authentication exchange.
+    /// </summary>
+    None = 32,
+    /// <summary>
+    /// All authentication methods. For internal use.
+    /// </summary>
+    All = Password | MD5 | GSS | SSPI | ScramSHA256 | None
+}

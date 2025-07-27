@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "NpgBuilder": {
+      "commandName": "Project",
+      "commandLineArgs": "--version v9.0.3 --source /Users/lewis/github/npgsql/ --output /Users/lewis/Downloads",
+      "environmentVariables": {
+      }
+    }
+  }
+}
