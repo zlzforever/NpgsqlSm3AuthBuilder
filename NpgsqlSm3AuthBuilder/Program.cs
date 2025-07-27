@@ -39,7 +39,7 @@ if (!Directory.Exists(output))
 
 var requestTypePath = Path.Combine(npgsqlBase, "src/Npgsql/BackendMessages/AuthenticationRequestType.cs");
 var sm3PasswordMessagePath = Path.Combine(npgsqlBase, "src/Npgsql/Internal/AuthenticationSm3PasswordMessage.cs");
-var hgSm3Path = Path.Combine(npgsqlBase, "src/Npgsql/Internal/HgSm3.cs");
+var sm3Path = Path.Combine(npgsqlBase, "src/Npgsql/Internal/Sm3.cs");
 var connectorSm3Path = Path.Combine(npgsqlBase, "src/Npgsql/Internal/NpgsqlConnector.Sm3.cs");
 var requireAuthModePath = Path.Combine(npgsqlBase, "src/Npgsql/RequireAuthMode.cs");
 var assembly = typeof(Program).Assembly;
@@ -56,7 +56,7 @@ Console.WriteLine("Add SM3 authentication password message");
 HandleAuthenticationSm3PasswordMessage();
 Console.WriteLine($"=============== Step {++step} ===============");
 Console.WriteLine("Add HighGo sm3 hash algorithm");
-HandleHgSm3();
+HandleSm3();
 Console.WriteLine($"=============== Step {++step} ===============");
 Console.WriteLine("Add AuthenticateSm3 method to NpgsqlConnector");
 HandleSm3Connector();
@@ -109,7 +109,7 @@ void Clean()
     {
         requestTypePath,
         sm3PasswordMessagePath,
-        hgSm3Path,
+        sm3Path,
         connectorSm3Path,
         requireAuthModePath
     };
@@ -206,10 +206,10 @@ void HandleSm3Connector()
     File.WriteAllText(connectorSm3Path, codes);
 }
 
-void HandleHgSm3()
+void HandleSm3()
 {
-    var codes = GetText("HgSm3.txt");
-    File.WriteAllText(hgSm3Path, codes);
+    var codes = GetText("Sm3.txt");
+    File.WriteAllText(sm3Path, codes);
 }
 
 void HandleAuthenticationSm3PasswordMessage()

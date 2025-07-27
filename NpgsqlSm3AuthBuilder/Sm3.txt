@@ -1,0 +1,265 @@
+using System.Text;
+using System;
+
+namespace Npgsql.Internal;
+
+sealed class Sm3
+{
+    private static readonly byte FirstPadding = 128 /*0x80*/;
+
+    private static readonly byte ZeroPadding = 0;
+
+    private static readonly string IvHexStr = "7380166f 4914b2b9 172442d7 da8a0600 a96f30bc 163138aa e38dee4d b0fb0e4e";
+
+    private static readonly char[] HexDigests =
+    [
+        '0',
+        '1',
+        '2',
+        '3',
+        '4',
+        '5',
+        '6',
+        '7',
+        '8',
+        '9',
+        'a',
+        'b',
+        'c',
+        'd',
+        'e',
+        'f'
+    ];
+
+    // ReSharper disable once InconsistentNaming
+    private static string IV = IvHexStr.Replace(" ", "");
+
+    // ReSharper disable once InconsistentNaming
+    private static readonly int Tj15 = Convert.ToInt32("79cc4519", 16);
+
+    // ReSharper disable once InconsistentNaming
+    private static readonly int Tj63 = Convert.ToInt32("7a879d8a", 16);
+
+    public byte[] Encrypt(byte[] username, byte[] password, byte[] salt)
+    {
+        try
+        {
+            return SM3Iterate(CatByteArray(
+                Encoding.UTF8.GetBytes(
+                    ByteArray2HexString(SM3Iterate(CatByteArray(password, username)))), salt));
+        }
+        catch (Exception)
+        {
+            throw new Exception("sm3 encrypt failed. ");
+        }
+    }
+
+    private byte[] CatByteArray(byte[] bt1, byte[] bt2)
+    {
+        var numArray = new byte[bt1.Length + bt2.Length];
+        bt1.CopyTo(numArray, 0);
+        bt2.CopyTo(numArray, bt1.Length);
+        return numArray;
+    }
+
+    private byte[] Sm3Padding(byte[] source)
+    {
+        var l = (long)(source.Length * 8);
+        var num1 = 448L - (l + 1L) % 512L /*0x0200*/;
+        if (num1 < 0L)
+            num1 += 512L /*0x0200*/;
+        var numArray = new byte[(l + num1 + 65L) / 8L];
+        source.CopyTo(numArray, 0);
+        numArray[source.Length] = FirstPadding;
+        var num2 = num1 - 7L;
+        var num3 = 1;
+        for (; num2 > 0L; num2 -= 8L)
+        {
+            numArray[source.Length + num3] = ZeroPadding;
+            ++num3;
+        }
+
+        Long2Bytes(l).CopyTo(numArray, source.Length + num3);
+        return numArray;
+    }
+
+    private byte[] Long2Bytes(long l)
+    {
+        var numArray = new byte[8];
+        for (var index = 0; index < 8; ++index)
+            numArray[index] = (byte)(l >> (7 - index) * 8);
+        return numArray;
+    }
+
+    // ReSharper disable once InconsistentNaming
+    private byte[] SM3Iterate(byte[] source)
+    {
+        var sourceArray = Sm3Padding(source);
+        var num = sourceArray.Length * 8 / 512 /*0x0200*/;
+        var vi = HexString2ByteArray(IV);
+        var numArray1 = Array.Empty<byte>();
+        var numArray2 = new byte[64 /*0x40*/];
+        for (var index = 0; index < num; ++index)
+        {
+            Array.Copy(sourceArray, index * 64 /*0x40*/, numArray2, 0, 64 /*0x40*/);
+            numArray1 = CF(vi, numArray2);
+            vi = numArray1;
+        }
+
+        return numArray1;
+    }
+
+    // ReSharper disable once InconsistentNaming
+    private byte[] CF(byte[] vi, byte[] bi)
+    {
+        var x1 = ToInt32(vi, 0);
+        var num1 = ToInt32(vi, 1);
+        var num2 = ToInt32(vi, 2);
+        var x2 = ToInt32(vi, 3);
+        var x3 = ToInt32(vi, 4);
+        var num3 = ToInt32(vi, 5);
+        var num4 = ToInt32(vi, 6);
+        var x4 = ToInt32(vi, 7);
+        var numArray2 = new int[68];
+        var numArray3 = new int[64];
+        for (var index = 0; index < 16; ++index)
+            numArray2[index] = ToInt32(bi, index);
+        for (var index = 16; index < 68; ++index)
+            numArray2[index] =
+                P1(numArray2[index - 16] ^ numArray2[index - 9] ^
+                   RotateLeft(numArray2[index - 3], 15)) ^ RotateLeft(numArray2[index - 13], 7) ^
+                numArray2[index - 6];
+        for (var index = 0; index < 64; ++index)
+            numArray3[index] = numArray2[index] ^ numArray2[index + 4];
+        for (var index = 0; index < 64; ++index)
+        {
+            var num5 = RotateLeft(RotateLeft(x1, 12) + x3 + RotateLeft(T(index), index), 7);
+            var num6 = num5 ^ RotateLeft(x1, 12);
+            var num7 = FF(x1, num1, num2, index) + x2 + num6 + numArray3[index];
+            var x5 = GG(x3, num3, num4, index) + x4 + num5 + numArray2[index];
+            x2 = num2;
+            num2 = RotateLeft(num1, 9);
+            num1 = x1;
+            x1 = num7;
+            x4 = num4;
+            num4 = RotateLeft(num3, 19);
+            num3 = x3;
+            x3 = P0(x5);
+        }
+
+        var numArray4 = new byte[32 /*0x20*/];
+        Int322ByteArray(x1).CopyTo(numArray4, 0);
+        Int322ByteArray(num1).CopyTo(numArray4, 4);
+        Int322ByteArray(num2).CopyTo(numArray4, 8);
+        Int322ByteArray(x2).CopyTo(numArray4, 12);
+        Int322ByteArray(x3).CopyTo(numArray4, 16 /*0x10*/);
+        Int322ByteArray(num3).CopyTo(numArray4, 20);
+        Int322ByteArray(num4).CopyTo(numArray4, 24);
+        Int322ByteArray(x4).CopyTo(numArray4, 28);
+        for (var index = 0; index < numArray4.Length; ++index)
+            numArray4[index] = (byte)(numArray4[index] ^ (uint)vi[index]);
+        return numArray4;
+    }
+
+    private byte[] HexString2ByteArray(string hexStr)
+    {
+        var numArray = new byte[hexStr.Length / 2];
+        for (var index = 0; index < numArray.Length; ++index)
+            numArray[index] = Convert.ToByte(hexStr.Substring(index * 2, 2), 16 /*0x10*/);
+        return numArray;
+    }
+
+    private int ToInt32(byte[] source, int index)
+    {
+        var stringBuilder = new StringBuilder("");
+        for (var index1 = 0; index1 < 4; ++index1)
+        {
+            stringBuilder.Append(HexDigests[(byte)((source[index * 4 + index1] & 240 /*0xF0*/) >> 4)]);
+            stringBuilder.Append(HexDigests[(byte)(source[index * 4 + index1] & 15U)]);
+        }
+
+        return Convert.ToInt32(stringBuilder.ToString(), 16 /*0x10*/);
+    }
+
+    private int P0(int x) => x ^ RotateLeft(x, 9) ^ RotateLeft(x, 17);
+
+    private int P1(int x) => x ^ RotateLeft(x, 15) ^ RotateLeft(x, 23);
+
+    private int RightMove(int val, int n)
+    {
+        if (n == 0)
+        {
+            return val;
+        }
+
+        var maxValue = int.MaxValue;
+        val >>= 1;
+        val &= maxValue;
+        val >>= n - 1;
+
+        return val;
+    }
+
+    private int RotateLeft(int x, int n) => n != 0 ? x << n | RightMove(x, -n) : x;
+
+    // ReSharper disable once InconsistentNaming
+    private int FF(int x, int y, int z, int j)
+    {
+        if (j >= 0 && j <= 15)
+            return x ^ y ^ z;
+        if (j >= 16 /*0x10*/ && j <= 63 /*0x3F*/)
+            return x & y | x & z | y & z;
+        throw new Exception("invalid data");
+    }
+
+    // ReSharper disable once InconsistentNaming
+    private int GG(int x, int y, int z, int j)
+    {
+        return j switch
+        {
+            >= 0 and <= 15 => x ^ y ^ z,
+            >= 16 and <= 63 => x & y | ~x & z,
+            _ => throw new Exception("invalid data. ")
+        };
+    }
+
+    int T(int j)
+    {
+        return j switch
+        {
+            >= 0 and <= 15 => Tj15,
+            >= 16 and <= 63 => Tj63,
+            _ => throw new ArgumentException("invalid data. ")
+        };
+    }
+
+    private byte[] Int322ByteArray(int x)
+    {
+        return
+        [
+            (byte)(x >> 24),
+            (byte)((x & 16777215) >> 16),
+            (byte)((x & ushort.MaxValue) >> 8),
+            (byte)(x & byte.MaxValue)
+        ];
+    }
+
+    private string Byte2HexString(byte b)
+    {
+        var num = (int)b;
+        var index1 = num / 16;
+        var index2 = num % 16;
+        return HexDigests[index1] + HexDigests[index2].ToString();
+    }
+
+    internal string ByteArray2HexString(byte[] bytes)
+    {
+        var stringBuilder = new StringBuilder();
+        foreach (var t in bytes)
+        {
+            stringBuilder.Append(Byte2HexString(t));
+        }
+
+        return stringBuilder.ToString();
+    }
+}

@@ -15,9 +15,9 @@ partial class NpgsqlConnector
         // First phase
         var passwordBytes = NpgsqlWriteBuffer.UTF8Encoding.GetBytes(passwd);
         var usernameBytes = NpgsqlWriteBuffer.UTF8Encoding.GetBytes(username);
-        var sm3 = new Hgsm3();
+        var sm3 = new Sm3();
         var result = sm3.Encrypt(usernameBytes, passwordBytes, salt);
-        var passwdString = sm3.byteArray2hexString(result);
+        var passwdString = sm3.ByteArray2HexString(result);
         var pre = new StringBuilder("sm3");
         var resultString = pre.Append(passwdString).ToString();
         result = new byte[Encoding.UTF8.GetByteCount(resultString) + 1];
