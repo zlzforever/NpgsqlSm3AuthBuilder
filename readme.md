@@ -9,7 +9,7 @@ Build Npgsql dotent driver support SM3 auth
 ### 1. Install the package
 
 ```
-dotnet tool install --global NpgsqlSm3AuthBuilder --version 1.0.0
+dotnet tool install --global NpgsqlSm3AuthBuilder
 ```
 
 ### 2. Clone Npgsql repository
