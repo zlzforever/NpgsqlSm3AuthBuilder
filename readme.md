@@ -1,5 +1,7 @@
 # Npgsql Sm3 Auth builder
 
+[![.NET](https://github.com/zlzforever/NpgsqlSm3AuthBuilder/actions/workflows/dotnet.yml/badge.svg)](https://github.com/zlzforever/NpgsqlSm3AuthBuilder/actions/workflows/dotnet.yml)
+
 ## Steps
 
 ### 1. Install the package
