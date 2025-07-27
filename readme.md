@@ -2,6 +2,8 @@
 
 [![.NET](https://github.com/zlzforever/NpgsqlSm3AuthBuilder/actions/workflows/dotnet.yml/badge.svg)](https://github.com/zlzforever/NpgsqlSm3AuthBuilder/actions/workflows/dotnet.yml)
 
+Build Npgsql dotent driver support SM3 auth
+
 ## Steps
 
 ### 1. Install the package
