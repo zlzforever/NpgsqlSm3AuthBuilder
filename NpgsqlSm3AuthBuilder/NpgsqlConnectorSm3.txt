@@ -1,0 +1,52 @@
+using System;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Npgsql.Internal;
+
+partial class NpgsqlConnector
+{
+    async Task AuthenticateSm3(string username, byte[] salt, bool async, CancellationToken cancellationToken = default)
+    {
+        var passwd = await GetPassword(username, async, cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrEmpty(passwd))
+            throw new NpgsqlException("No password has been provided but the backend requires one (in MD5)");
+
+        // First phase
+        var passwordBytes = NpgsqlWriteBuffer.UTF8Encoding.GetBytes(passwd);
+        var usernameBytes = NpgsqlWriteBuffer.UTF8Encoding.GetBytes(username);
+
+        var cryptBuf = new byte[passwordBytes.Length + usernameBytes.Length];
+        passwordBytes.CopyTo(cryptBuf, 0);
+        usernameBytes.CopyTo(cryptBuf, passwordBytes.Length);
+
+        var sb = new StringBuilder();
+        var hashResult = Sm3.HashData(cryptBuf);
+
+        foreach (var b in hashResult)
+            sb.Append(b.ToString("x2"));
+
+        var prehash = sb.ToString();
+
+        var prehashbytes = NpgsqlWriteBuffer.UTF8Encoding.GetBytes(prehash);
+        cryptBuf = new byte[prehashbytes.Length + 4];
+        Array.Copy(salt, 0, cryptBuf, prehashbytes.Length, 4);
+
+        // 2.
+        prehashbytes.CopyTo(cryptBuf, 0);
+
+        sb = new StringBuilder("sm3");
+        hashResult = Sm3.HashData(cryptBuf);
+        foreach (var b in hashResult)
+            sb.Append(b.ToString("x2"));
+
+        var resultString = sb.ToString();
+        var result = new byte[Encoding.UTF8.GetByteCount(resultString) + 1];
+        Encoding.UTF8.GetBytes(resultString, 0, resultString.Length, result, 0);
+        result[^1] = 0;
+
+        await WritePassword(result, async, cancellationToken).ConfigureAwait(false);
+        await Flush(async, cancellationToken).ConfigureAwait(false);
+    }
+}

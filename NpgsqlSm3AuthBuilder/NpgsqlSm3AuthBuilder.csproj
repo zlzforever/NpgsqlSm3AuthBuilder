@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <!-- Tool 配置 -->
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>buildpgsm3</ToolCommandName>
+        <PackageId>NpgsqlSm3AuthBuilder</PackageId>
+        <Version>1.0.1</Version>
+        <Authors>zlzforever</Authors>
+        <Description>Build Npgsql dotent driver support SM3 auth</Description>
+        <AssemblyName>buildpgsm3</AssemblyName>
+        <Copyright>© 2025 zlzforever. All rights reserved.</Copyright>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <LangVersion>latest</LangVersion>
+        <PackageProjectUrl>https://github.com/zlzforever/NpgsqlSm3AuthBuilder</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/zlzforever/NpgsqlSm3AuthBuilder</RepositoryUrl>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageReadmeFile>readme.md</PackageReadmeFile>
+        <PackageTags>Npgsql;SM3</PackageTags>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="..\LICENSE" Pack="true" PackagePath=""/>
+        <None Include="..\readme.md" Pack="true" PackagePath=""/>
+    </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Include="AuthenticationRequestType.txt">
+        </EmbeddedResource>
+        <EmbeddedResource Include="AuthenticationSm3PasswordMessage.txt">
+        </EmbeddedResource>
+        <EmbeddedResource Include="Sm3.txt">
+        </EmbeddedResource>
+        <EmbeddedResource Include="NpgsqlConnectorSm3.txt">
+        </EmbeddedResource>
+        <EmbeddedResource Include="RequireAuthMode.txt"/>
+    </ItemGroup>
+
+</Project>
