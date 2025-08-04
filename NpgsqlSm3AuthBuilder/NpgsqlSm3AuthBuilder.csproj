@@ -9,7 +9,7 @@
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>buildpgsm3</ToolCommandName>
         <PackageId>NpgsqlSm3AuthBuilder</PackageId>
-        <Version>1.0.1</Version>
+        <Version>1.0.2</Version>
         <Authors>zlzforever</Authors>
         <Description>Build Npgsql dotent driver support SM3 auth</Description>
         <AssemblyName>buildpgsm3</AssemblyName>
